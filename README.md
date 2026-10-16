@@ -244,6 +244,7 @@ dbd-killer-banpick/
 
 **本项目是非官方的社区工具**，与 Behaviour Interactive 及《黎明杀机》（Dead by Daylight）官方
 **无任何关联，未被授权、认可或赞助**。游戏名称、角色名称、赛事名称及相关商标归各自权利人所有。
+**本项目的想法来自作者原创，由AI进行代码编写**
 
 为了把风险降到最低，本项目刻意遵守以下约定（也请贡献者一并遵守，见 [CONTRIBUTING.md](CONTRIBUTING.md)）：
 
