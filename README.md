@@ -29,13 +29,14 @@
 
 ### 方式二：GitHub Pages（推荐给赛事/社群）
 
-Fork 本仓库 → 打开 `Settings → Pages` → Source 选择 **GitHub Actions**，
-之后每次推送 `main` 分支会自动构建并发布，访问 `https://<你的用户名>.github.io/<仓库名>/` 即可。
+仓库内置 Pages 工作流：打开 `Settings → Pages` → Source 选择 **GitHub Actions**，
+之后每次推送 `main` 分支都会自动构建并发布，线上地址为
+<https://veritas-k210.github.io/dbd-killer-banpick/>
 
 ### 方式三：本地开发
 
 ```bash
-git clone https://github.com/<你的用户名>/dbd-killer-banpick.git
+git clone https://github.com/Veritas-K210/dbd-killer-banpick.git
 cd dbd-killer-banpick
 
 npm run dev        # 起一个零依赖静态服务器 → http://localhost:4173 （直接调试 src/）
@@ -72,11 +73,12 @@ npm run release    # 生成文档 + 构建 + 测试
 ## 赛制规则
 
 | 赛制 | 随机角色池 | 全局 Ban | 每队 Ban | 每队 Pick | 剩余杀手 | 结果总数 |
-| BO1 |     5      |    4    |     2     |     0    |    1    |     1   |
-| BO3 |     11     |    8    |     4     |    1    |    1     |    3    |
-| BO5 |     17     |    12   |     6     |    2     |    1    |    5    |
-| BO7 |     23     |    16   |     8     |    3     |    1    |     7   |
-| BO9 |     17     |    8    |     4     |    4     |    1    |    9    |
+|---|---:|---:|---:|---:|---:|---:|
+| BO1 | 5 | 4 | 2 | 0 | 1 | 1 |
+| BO3 | 11 | 8 | 4 | 1 | 1 | 3 |
+| BO5 | 17 | 12 | 6 | 2 | 1 | 5 |
+| BO7 | 23 | 16 | 8 | 3 | 1 | 7 |
+| BO9 | 17 | 8 | 4 | 4 | 1 | 9 |
 
 规则推导：
 
@@ -89,12 +91,13 @@ npm run release    # 生成文档 + 构建 + 测试
 
 ### 穿插流程节奏（双方轮流 A→B→A→B…）
 
-| 赛制 |                                 流程                                     | 步数 |
-| BO1 | 各禁 2                                                                    | 4 |
-| BO3 | 各禁 2 → **各选 1** → 各禁 2                                               | 10 |
-| BO5 | 各禁 2 → **各选 1** → 各禁 2 → **各选 1** → 各禁 2                         | 16 |
-| BO7 | 各禁 2 → **各选 1** → 各禁 2 → **各选 1** → 各禁 2 → **各选 1** → 各禁 2    | 22 |
-| BO9 | （各禁 1 → **各选 1**）× 4                                                 | 16 |
+| 赛制 | 流程 | 步数 |
+|---|---|---:|
+| BO1 | 各禁 2 | 4 |
+| BO3 | 各禁 2 → **各选 1** → 各禁 2 | 10 |
+| BO5 | 各禁 2 → **各选 1** → 各禁 2 → **各选 1** → 各禁 2 | 16 |
+| BO7 | 各禁 2 → **各选 1** → 各禁 2 → **各选 1** → 各禁 2 → **各选 1** → 各禁 2 | 22 |
+| BO9 | （各禁 1 → **各选 1**）× 4 | 16 |
 
 实现方式（见 [`src/js/core/rules.js`](src/js/core/rules.js)）：
 每队各有 `n = 每队Ban + 每队Pick` 个回合，工具把该队的 Pick 回合**均匀铺开**（两侧留 Ban），
@@ -117,14 +120,15 @@ npm run release    # 生成文档 + 构建 + 测试
 
 内置预设（**每个预设单独保存**，都可在界面上自由增删后另存为自己的版本）：
 
-|           预设          | 可抽取屠夫 |                        说明                            |
-|         全部屠夫        |    44      | 默认，不做限制                                          |
-| DBDL Season X（参考池） |     42     | 依据 Liquipedia 逐局记录归纳（护士 / 枯萎者 全赛季未出场） |
-| DBD World Cup（参考池） |     43     | 依据逐局记录（护士仅出场 1 次）                           |
-| 虎牙万圣赛（明文禁用）   |     41      | 规则原文：禁用 护士、枯萎者、怨灵                          |
-| PHG 1v1 固定 16 屠夫池  |     16     | 公开规则中的固定白名单                                    |
-| OSL（参考池）           |     42     | 官方名单需人机验证无法公开获取，属占位参考池                |
-| 竞技通用池 · 无 S 级     |     40     | 社区通用约定：排除护士、枯萎者、怨灵、艺术家                |
+| 预设 | 可抽取屠夫 | 说明 |
+|---|---:|---|
+| 全部屠夫 | 44 | 默认，不做限制 |
+| DBDL Season X（参考池） | 42 | 依据 Liquipedia 逐局记录归纳（护士 / 枯萎者 全赛季未出场） |
+| DBD World Cup（参考池） | 43 | 依据逐局记录（护士仅出场 1 次） |
+| 虎牙万圣赛（明文禁用） | 41 | 规则原文：禁用 护士、枯萎者、怨灵 |
+| PHG 1v1 固定 16 屠夫池 | 16 | 公开规则中的固定白名单 |
+| OSL（参考池） | 42 | 官方名单需人机验证无法公开获取，属占位参考池 |
+| 竞技通用池 · 无 S 级 | 40 | 社区通用约定：排除护士、枯萎者、怨灵、艺术家 |
 
 > ⚠️ DBDL / OSL / 世界赛的官方规则书（Google Docs、赛事官网）目前无法公开抓取，
 > 因此内置预设均为**参考池并标注来源**，不是官方名单。详见 [`docs/presets.md`](docs/presets.md)。
@@ -170,6 +174,7 @@ dbd-killer-banpick/
 ├─ docs/{rules,presets,killers}.md
 ├─ assets/{logo,ui-preview}.svg
 ├─ dist/index.html             # 构建产物：单文件、离线可用（GitHub Pages 直接发布这个目录）
+├─ .gitattributes              # 统一 LF，标注生成物（避免 CI 假 diff）
 └─ .github/workflows/{ci,pages}.yml
 ```
 
@@ -179,13 +184,14 @@ dbd-killer-banpick/
 
 ### 常用命令
 
-|        命令         |                      作用                         |
-| `npm run dev`       | 启动静态服务器调试 `src/`（http://localhost:4173） |
-| `npm run dev:dist`  | 调试构建产物 `dist/`                               |
-| `npm run build`     | 生成单文件 `dist/index.html`                      |
-| `npm test`          | 构建产物自检 + 109 项逻辑回归                      |
-| `npm run docs`      | 由代码数据重新生成文档                             |
-| `npm run release`    | docs + build + test 一条龙                        |
+| 命令 | 作用 |
+|---|---|
+| `npm run dev` | 启动静态服务器调试 `src/`（http://localhost:4173） |
+| `npm run dev:dist` | 调试构建产物 `dist/` |
+| `npm run build` | 生成单文件 `dist/index.html` |
+| `npm test` | 构建产物自检 + 109 项逻辑回归 |
+| `npm run docs` | 由代码数据重新生成文档 |
+| `npm run release` | docs + build + test 一条龙 |
 
 ### 新增屠夫
 
@@ -244,29 +250,30 @@ dbd-killer-banpick/
 
 **本项目是非官方的社区工具**，与 Behaviour Interactive 及《黎明杀机》（Dead by Daylight）官方
 **无任何关联，未被授权、认可或赞助**。游戏名称、角色名称、赛事名称及相关商标归各自权利人所有。
-**本项目的想法来自作者原创，由AI进行代码编写**
 
 为了把风险降到最低，本项目刻意遵守以下约定（也请贡献者一并遵守，见 [CONTRIBUTING.md](CONTRIBUTING.md)）：
 
-| 约定                        | 说明                                                                   |
-| **不使用任何游戏素材**     | 不含游戏立绘、图标、UI 截图、音效、字体；界面与 README 中的图都是自绘 SVG    |
-| **只做指代性使用**        | 屠夫 / 游戏名称仅用于指代对应角色与作品，不作为本项目的品牌或 Logo            |
-| **不暗示官方关联**        | 项目名、页面标题与页脚均标注「非官方」；不注册含商标的域名                     |
-| **赛事名仅作参照**        | DBDL / OSL / 世界杯等名称只用于说明「参照哪套规则」，与主办方无隶属或合作关系  |
-| **预设标注为参考池**      | 每个预设都显示来源与局限，正式比赛以主办方公布规则为准                         |
-| **非商业**               | 项目不含广告、付费内容与周边；如接受赞助，请注意这仍可能被视为商业使用          |
-| **不整段复制规则文本**    | 只整理「哪些屠夫被禁 / 出场」这类事实性信息，并注明来源链接                    |
+| 约定 | 说明 |
+|---|---|
+| **不使用任何游戏素材** | 不含游戏立绘、图标、UI 截图、音效、字体；界面与 README 中的图都是自绘 SVG |
+| **只做指代性使用** | 屠夫 / 游戏名称仅用于指代对应角色与作品，不作为本项目的品牌或 Logo |
+| **不暗示官方关联** | 项目名、页面标题与页脚均标注「非官方」；不注册含商标的域名 |
+| **赛事名仅作参照** | DBDL / OSL / 世界杯等名称只用于说明「参照哪套规则」，与主办方无隶属或合作关系 |
+| **预设标注为参考池** | 每个预设都显示来源与局限，正式比赛以主办方公布规则为准 |
+| **非商业** | 项目不含广告、付费内容与周边；如接受赞助，请注意这仍可能被视为商业使用 |
+| **不整段复制规则文本** | 只整理「哪些屠夫被禁 / 出场」这类事实性信息，并注明来源链接 |
 
 ### 数据来源与署名
 
-| 内容               | 来源                                                                                                                | 说明                        |
-| 屠夫名单与实装章节  | [deadbydaylight.wiki.gg](https://deadbydaylight.wiki.gg/wiki/Killers) 等公开 wiki                                    | 名单属事实性短名称集合 |
-| 中文译名           | 官方 / 赛事名单译名                                                                                                   | 界面与文档统一采用，旧社区叫法作为搜索别名 |
+| 内容 | 来源 | 说明 |
+|---|---|---|
+| 屠夫名单与实装章节 | [deadbydaylight.wiki.gg](https://deadbydaylight.wiki.gg/wiki/Killers) 等公开 wiki | 名单属事实性短名称集合 |
+| 中文译名 | 官方 / 赛事名单译名 | 界面与文档统一采用，旧社区叫法作为搜索别名 |
 | DBDL Season X 预设 | [Liquipedia](https://liquipedia.net/lab/api.php?action=parse&page=Dbd/Dbdl%20season%20x&format=json&prop=wikitext) | Liquipedia 内容采用 **CC-BY-SA 3.0**，此处按其要求署名并给出链接 |
 | DBD World Cup 预设 | [Liquipedia](https://liquipedia.net/lab/api.php?action=parse&page=Dbd/Dbd%20world%20cup&format=json&prop=wikitext) | 同上 |
-| 虎牙万圣赛禁用名单   | [虎牙赛事公告](https://blog.huya.com/mblog/index?detail=true&id=49125&tab=news)                                     | 规则明文禁用护士 / 枯萎者 / 怨灵 |
-| PHG 1v1 固定 16 池 | [PHG Balanced DBD 规则](https://mcpleh.github.io/PHGBALANCEDBD/rules1x1.html)                                        | 公开规则页 |
-| OSL                 | —                                                                                                                   | 官方名单无法公开获取，内置为占位参考池 |
+| 虎牙万圣赛禁用名单 | [虎牙赛事公告](https://blog.huya.com/mblog/index?detail=true&id=49125&tab=news) | 规则明文禁用护士 / 枯萎者 / 怨灵 |
+| PHG 1v1 固定 16 池 | [PHG Balanced DBD 规则](https://mcpleh.github.io/PHGBALANCEDBD/rules1x1.html) | 公开规则页 |
+| OSL | — | 官方名单无法公开获取，内置为占位参考池 |
 
 > 以上为工程实践层面的整理，**不构成法律意见**。若要用于商业用途（广告、付费、周边等），
 > 建议先咨询专业律师，并查阅 Behaviour Interactive 的粉丝内容 / 品牌使用政策。
