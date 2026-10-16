@@ -1,0 +1,1319 @@
+<!DOCTYPE html>
+<!--
+  本文件由 scripts/build.mjs 从 src/ 自动生成，请勿直接编辑。
+  源码：src/index.html + src/styles/main.css + src/js/**｜修改后运行：npm run build
+-->
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+  <meta name="description" content="黎明杀机屠夫 Ban/Pick 工具：BO1/BO3/BO5/BO7/BO9 赛制、随机抽池、Ban 与 Pick 穿插流程、赛事与自定义预设。单文件离线可用。">
+  <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Crect width='64' height='64' rx='14' fill='%230c0e13'/%3E%3Cpath d='M18 46 L40 18 L46 22 L24 50 Z' fill='%23d8443c'/%3E%3Ccircle cx='44' cy='46' r='6' fill='%23e0b355'/%3E%3C/svg%3E">
+<title>黎明杀机 · 屠夫 Ban/Pick 工具（非官方）</title>
+<style>
+/* =========================================================
+   样式：主题变量、布局、组件
+   ========================================================= */
+
+:root{
+  --bg:#0c0e13; --panel:#151922; --panel2:#1c212c; --line:#2a3140;
+  --txt:#e7ecf5; --dim:#93a0b5; --red:#d8443c; --gold:#e0b355;
+  --blue:#3d7fd8; --green:#37a86b; --purple:#8b6cd8;
+}
+*{box-sizing:border-box}
+html,body{margin:0;padding:0}
+body{
+  background:radial-gradient(1200px 600px at 50% -200px,#1b2130 0%,var(--bg) 60%) fixed,var(--bg);
+  color:var(--txt); font:14px/1.5 "Microsoft YaHei","PingFang SC","Segoe UI",system-ui,sans-serif;
+  min-height:100vh;
+}
+h1,h2,h3{margin:0;font-weight:700}
+button,input,select,textarea{font:inherit;color:inherit}
+a{color:var(--gold)}
+
+header.top{
+  display:flex;flex-wrap:wrap;gap:12px;align-items:center;justify-content:space-between;
+  padding:14px 20px;border-bottom:1px solid var(--line);background:rgba(12,14,19,.85);
+  backdrop-filter:blur(6px);position:sticky;top:0;z-index:20;
+}
+header.top h1{font-size:19px;letter-spacing:.5px}
+header.top h1 span{color:var(--red)}
+.top-actions{display:flex;gap:8px;flex-wrap:wrap}
+
+.wrap{display:flex;gap:16px;padding:16px;align-items:flex-start}
+.side{flex:0 0 372px;max-width:372px;display:flex;flex-direction:column;gap:14px}
+.main{flex:1 1 auto;min-width:0;display:flex;flex-direction:column;gap:14px}
+@media (max-width:1080px){
+  .wrap{flex-direction:column}
+  .side{flex:1 1 auto;max-width:none;width:100%}
+}
+
+.panel{background:linear-gradient(180deg,var(--panel) 0%,#12161e 100%);border:1px solid var(--line);
+  border-radius:12px;padding:14px;box-shadow:0 6px 22px rgba(0,0,0,.35)}
+.panel > h2{font-size:14px;color:var(--gold);letter-spacing:.6px;margin-bottom:10px;
+  display:flex;align-items:center;gap:8px;justify-content:space-between}
+.panel > h2 .sub{font-size:11px;color:var(--dim);font-weight:400}
+
+.btn{background:var(--panel2);border:1px solid var(--line);border-radius:8px;padding:7px 12px;
+  cursor:pointer;transition:.15s;white-space:nowrap}
+.btn:hover{border-color:#48546c;background:#232a37;transform:translateY(-1px)}
+.btn:active{transform:translateY(0)}
+.btn.primary{background:linear-gradient(180deg,#c8402f,#a52f22);border-color:#e0655a;font-weight:700}
+.btn.primary:hover{background:linear-gradient(180deg,#dc4a38,#b23526)}
+.btn.gold{background:linear-gradient(180deg,#c79a3f,#9d7524);border-color:#e5bf6c;color:#241a05;font-weight:700}
+.btn.ghost{background:transparent}
+.btn:disabled{opacity:.4;cursor:not-allowed;transform:none}
+.btn.sm{padding:4px 9px;font-size:12px;border-radius:6px}
+
+.row{display:flex;gap:8px;flex-wrap:wrap;align-items:center}
+.row.tight{gap:6px}
+label.fld{display:flex;flex-direction:column;gap:4px;font-size:12px;color:var(--dim);flex:1 1 120px}
+input[type=text],select,textarea{background:#0e121a;border:1px solid var(--line);border-radius:7px;
+  padding:6px 8px;width:100%}
+textarea{resize:vertical;font-family:ui-monospace,Consolas,monospace;font-size:12px}
+input[type=checkbox]{width:auto;accent-color:var(--red)}
+
+.chips{display:flex;gap:6px;flex-wrap:wrap}
+.chip{border:1px solid var(--line);background:#0f131b;border-radius:999px;padding:5px 12px;cursor:pointer;
+  font-size:13px;transition:.15s}
+.chip:hover{border-color:#4c5a75}
+.chip.on{background:linear-gradient(180deg,#c8402f,#a52f22);border-color:#e0655a;font-weight:700}
+
+.modes{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+.mode{border:1px solid var(--line);border-radius:10px;padding:10px;cursor:pointer;background:#0f131b;transition:.15s}
+.mode:hover{border-color:#4c5a75}
+.mode.on{border-color:var(--red);box-shadow:0 0 0 1px var(--red) inset,0 0 16px rgba(216,68,60,.25)}
+.mode .t{font-size:15px;font-weight:700;display:flex;justify-content:space-between;align-items:center}
+.mode .d{font-size:11px;color:var(--dim);margin-top:4px}
+.mode.pick.on{border-color:var(--blue);box-shadow:0 0 0 1px var(--blue) inset,0 0 16px rgba(61,127,216,.25)}
+
+.status{display:flex;flex-wrap:wrap;gap:10px;align-items:center;justify-content:space-between}
+.turnbox{display:flex;gap:10px;align-items:center;flex-wrap:wrap}
+.turnpill{padding:6px 14px;border-radius:999px;font-weight:700;border:1px solid var(--line);background:#0f131b}
+.turnpill.A{border-color:#e0655a;color:#ffb3ab;background:rgba(216,68,60,.14)}
+.turnpill.B{border-color:#5f97e8;color:#b6d3ff;background:rgba(61,127,216,.14)}
+.turnpill.done{border-color:var(--green);color:#9fe6bf;background:rgba(55,168,107,.14)}
+.counter{font-size:12px;color:var(--dim)}
+.counter b{color:var(--txt)}
+
+.poolhead{display:flex;justify-content:space-between;gap:10px;flex-wrap:wrap;align-items:center}
+.grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(150px,1fr));gap:10px;margin-top:12px}
+.card{position:relative;border:1px solid var(--line);border-radius:10px;padding:9px 10px;background:linear-gradient(180deg,#1a1f2a,#141821);
+  cursor:pointer;transition:.13s;min-height:66px;display:flex;flex-direction:column;justify-content:center;gap:2px}
+.card:hover:not(.used){border-color:#6d7d9c;transform:translateY(-2px);box-shadow:0 8px 18px rgba(0,0,0,.4)}
+.card .cn{font-weight:700;font-size:14px}
+.card .en{font-size:11px;color:var(--dim);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.card .tag{position:absolute;top:-8px;right:6px;font-size:10px;padding:1px 7px;border-radius:999px;font-weight:700}
+.card.ban{border-color:var(--red);background:linear-gradient(180deg,#2a1416,#1b0f10);opacity:.95}
+.card.ban .tag{background:var(--red);color:#fff}
+.card.ban .cn{text-decoration:line-through;text-decoration-color:rgba(255,255,255,.5)}
+.card.pickA{border-color:#e0655a;background:linear-gradient(180deg,#231a1a,#171213)}
+.card.pickA .tag{background:#e0655a;color:#301010}
+.card.pickB{border-color:#5f97e8;background:linear-gradient(180deg,#161d2b,#111621)}
+.card.pickB .tag{background:#5f97e8;color:#0b1729}
+.card.leftover{border-color:var(--gold);background:linear-gradient(180deg,#2a2415,#1b180f);box-shadow:0 0 14px rgba(224,179,85,.25)}
+.card.leftover .tag{background:var(--gold);color:#2a1f05}
+.card.candidate{border-color:var(--gold);animation:pulse 1.2s infinite}
+@keyframes pulse{0%,100%{box-shadow:0 0 0 rgba(224,179,85,.0)}50%{box-shadow:0 0 16px rgba(224,179,85,.55)}}
+.card .ord{position:absolute;bottom:4px;right:8px;font-size:11px;color:var(--gold);font-weight:700}
+
+table{width:100%;border-collapse:collapse;font-size:13px}
+th,td{border-bottom:1px solid var(--line);padding:6px 8px;text-align:left}
+th{color:var(--dim);font-weight:500;font-size:12px}
+tbody tr:hover{background:rgba(255,255,255,.03)}
+.tA{color:#ff9c92}
+.tB{color:#9fc4ff}
+.tL{color:var(--gold)}
+.empty{color:var(--dim);font-size:13px;padding:14px;text-align:center;border:1px dashed var(--line);border-radius:10px}
+
+.banlist{font-size:12px;color:var(--dim);display:flex;flex-direction:column;gap:4px;margin-top:10px}
+.banlist b{color:var(--txt)}
+.banlist .a{color:#ff9c92}
+.banlist .b{color:#9fc4ff}
+
+details{border:1px solid var(--line);border-radius:10px;padding:8px 10px;background:#0f131b}
+details>summary{cursor:pointer;font-size:13px;color:var(--gold);font-weight:700;outline:none}
+details[open]>summary{margin-bottom:10px}
+.killerpick{display:grid;grid-template-columns:repeat(auto-fill,minmax(120px,1fr));gap:4px;max-height:280px;overflow:auto;
+  padding:6px;border:1px solid var(--line);border-radius:8px;background:#0b0e14}
+.killerpick label{display:flex;gap:5px;align-items:center;font-size:12px;padding:3px 5px;border-radius:6px;cursor:pointer}
+.killerpick label:hover{background:rgba(255,255,255,.05)}
+.killerpick label.on{background:rgba(216,68,60,.18)}
+.hint{font-size:11px;color:var(--dim);line-height:1.6}
+.warn{font-size:12px;color:#ffcf8a;background:rgba(224,179,85,.1);border:1px solid rgba(224,179,85,.4);
+  border-radius:8px;padding:7px 9px}
+.ruleTable{font-size:12px}
+.ruleTable td,.ruleTable th{padding:4px 6px}
+.ruleTable tr.active{background:rgba(216,68,60,.16)}
+#toast{position:fixed;left:50%;bottom:34px;transform:translateX(-50%);display:flex;flex-direction:column;gap:8px;z-index:99;align-items:center}
+#toast div{background:#1d2431;border:1px solid var(--line);border-left:3px solid var(--red);border-radius:8px;
+  padding:9px 16px;box-shadow:0 10px 30px rgba(0,0,0,.5);animation:fade .25s;font-size:13px}
+@keyframes fade{from{opacity:0;transform:translateY(8px)}to{opacity:1;transform:none}}
+.modebar{display:flex;gap:6px;align-items:center;flex-wrap:wrap}
+
+/* 穿插流程时间轴 */
+.timeline{display:flex;flex-wrap:wrap;gap:5px;align-items:center;margin-top:12px}
+.timeline .lead{width:100%;font-size:11px;color:var(--dim)}
+.step{display:inline-flex;gap:4px;align-items:center;font-size:11px;padding:3px 8px;border-radius:999px;
+  border:1px solid var(--line);background:#0f131b;color:var(--dim);white-space:nowrap}
+.step b{font-weight:700;color:var(--txt)}
+.step.banStep b{color:#ff9c92}
+.step.pickStep b{color:#9fc4ff}
+.step.done{opacity:.38}
+.step.now{background:rgba(216,68,60,.22);border-color:var(--red);color:#fff;box-shadow:0 0 10px rgba(216,68,60,.4)}
+.step.now.pickStep{background:rgba(61,127,216,.24);border-color:var(--blue);box-shadow:0 0 10px rgba(61,127,216,.4)}
+.step.tail{border-style:dashed;border-color:var(--gold);color:var(--gold)}
+.step.tail b{color:var(--gold)}
+.flowtag{display:inline-block;font-size:11px;color:var(--gold);background:rgba(224,179,85,.1);
+  border:1px solid rgba(224,179,85,.35);border-radius:6px;padding:1px 6px;margin:1px 0}
+.logline{font-size:12px;color:var(--dim);line-height:1.9}
+.logline i{font-style:normal;color:var(--dim);display:inline-block;min-width:26px}
+.logline .bn{color:#ff9c92}
+.logline .pk{color:#9fc4ff}
+
+/* 页脚：非官方声明 */
+.foot{margin:6px 16px 26px;padding:12px 16px;border:1px solid var(--line);border-radius:12px;
+  background:rgba(15,19,27,.6);color:var(--dim);font-size:11.5px;line-height:1.8}
+.foot p{margin:0 0 6px}
+.foot p:last-child{margin-bottom:0}
+.foot b{color:#c8d2e2}
+
+</style>
+  <!-- 开发时直接双击本文件即可运行（经典脚本，无需构建） -->
+</head>
+<body>
+
+<header class="top">
+  <h1>🔪 黎明杀机 · 屠夫 <span>Ban / Pick</span> 工具 <span class="sub" style="font-size:12px">（非官方）</span></h1>
+  <div class="top-actions">
+    <span class="counter" id="ruleSummary"></span>
+    <button class="btn sm" id="undoBtn">↩ 撤销</button>
+    <button class="btn sm" id="resetFlowBtn">重置流程</button>
+    <button class="btn sm" id="copyBtn">📋 复制结果</button>
+  </div>
+</header>
+
+<div class="wrap">
+  <!-- ================= 侧栏 ================= -->
+  <aside class="side">
+    <section class="panel">
+      <h2>① 赛制与队伍</h2>
+      <div class="chips" id="formatChips"></div>
+      <div class="row" style="margin-top:10px">
+        <label class="fld">A 队名称<input type="text" id="teamA" value="A队"></label>
+        <label class="fld">B 队名称<input type="text" id="teamB" value="B队"></label>
+      </div>
+      <div class="row" style="margin-top:8px">
+        <label class="fld">先手方（先 Ban、先 Pick）
+          <select id="firstSide"><option value="A">A队</option><option value="B">B队</option></select>
+        </label>
+        <label class="fld">流程模式
+          <select id="flowMode">
+            <option value="mixed">穿插流程：Ban 之间穿插 Pick</option>
+            <option value="free">自由模式：Ban / Pick 独立切换</option>
+          </select>
+        </label>
+      </div>
+      <div class="hint" style="margin-top:8px">
+        穿插流程（默认）：双方严格轮流，按「各禁 N 位 → 各选 1 位 → 各禁 N 位 …」的节奏交替进行，全流程走完后固定只剩 1 位屠夫作为剩余杀手。
+      </div>
+      <div id="manualBox" style="margin-top:10px"></div>
+    </section>
+
+    <section class="panel">
+      <h2>② 角色池来源 <span class="sub" id="poolSrcInfo"></span></h2>
+      <select id="presetSelect"></select>
+      <div class="row" style="margin-top:8px">
+        <button class="btn primary" id="drawBtn">🎲 抽取角色池</button>
+        <button class="btn" id="redrawBtn">重新抽取</button>
+      </div>
+      <div class="banlist" id="srcInfo"></div>
+
+      <details style="margin-top:12px">
+        <summary>手动编辑可抽取屠夫（自定义角色池）</summary>
+        <div class="row" style="margin-bottom:8px">
+          <input type="text" id="killFilter" placeholder="搜索屠夫（中文/英文/别名）">
+        </div>
+        <div class="row tight" style="margin-bottom:8px">
+          <button class="btn sm" id="selAll">全选</button>
+          <button class="btn sm" id="selNone">全不选</button>
+          <button class="btn sm" id="selInv">反选</button>
+          <button class="btn sm" id="selPreset">仅勾选当前预设</button>
+        </div>
+        <div class="killerpick" id="killerPick"></div>
+        <div class="row" style="margin-top:10px">
+          <input type="text" id="presetName" placeholder="我的预设名称，例如：周日训练池">
+          <button class="btn gold" id="savePreset">💾 保存为我的预设</button>
+        </div>
+        <div class="row tight" style="margin-top:8px">
+          <button class="btn sm" id="overwritePreset">覆盖所选“我的预设”</button>
+          <button class="btn sm" id="deletePreset">删除所选“我的预设”</button>
+          <button class="btn sm" id="exportPreset">导出 JSON</button>
+          <button class="btn sm" id="importPreset">导入 JSON</button>
+        </div>
+        <div class="row tight" style="margin-top:8px">
+          <input type="text" id="newKiller" placeholder="补充新屠夫（如：The XXX / 中文名）">
+          <button class="btn sm" id="addKiller">＋ 添加到屠夫总表</button>
+        </div>
+        <div class="hint" style="margin-top:8px">勾选/取消勾选即可自定义角色池；抽签只会从「已勾选」的屠夫中随机抽取。</div>
+      </details>
+      <div class="hint" style="margin-top:10px">
+        ※ 赛事预设为社区依据公开资料整理的参考池，与赛事主办方无隶属关系；正式比赛请以主办方规则为准。
+      </div>
+    </section>
+
+    <section class="panel">
+      <h2>③ 规则速查</h2>
+      <div id="ruleTableBox"></div>
+      <div class="hint" style="margin-top:8px">
+        全局 Ban 数 = 角色池 − BO 数；每队 Pick 数 = (BO 数 − 1) ÷ 2；Ban/Pick 结束后剩下的最后 1 位屠夫作为「剩余杀手」自动进入结果池（排在顺序表最后）。<br>
+        角色池抽取数：BO1 → 5、BO3 → 11、BO5 → 17、BO7 → 23、BO9 → 17（如需其他数值，可用「高级」手动覆盖 Ban/Pick 次数，或直接手动勾选池子）。
+      </div>
+    </section>
+
+    <section class="panel">
+      <h2>④ 使用说明</h2>
+      <details open>
+        <summary>操作流程（3 步）</summary>
+        <div class="hint" style="margin-top:6px">
+          1. 选赛制（BO1/3/5/7/9）、填两队名称、确定先手方。<br>
+          2. 选角色池来源 —— 全部屠夫、赛事预设，或手动勾选自定义池；点「🎲 抽取角色池」随机抽签。<br>
+          3. 按时间轴提示依次点击屠夫卡牌（系统会自动标出「第 N 步 · 哪队 · Ban 还是 Pick」）；全部走完后点「🏁 完成选择」，把最后剩下的那 1 位屠夫加入结果池。<br>
+          顺序表会自动按选择顺序编号，并标注选择方与「剩余杀手」（永远排在最后一位）；下方还有完整的「行动日志」。
+        </div>
+      </details>
+      <details open>
+        <summary>穿插流程：Ban 与 Pick 如何交替</summary>
+        <div class="hint" style="margin-top:6px">
+          双方<b>严格轮流</b>（先手方拿第 1 步），每个赛制的节奏固定为：<br>
+          · BO1：各禁 2 → 剩 1<br>
+          · BO3：各禁 2 → 各选 1 → 各禁 2 → 剩 1<br>
+          · BO5：各禁 2 → 各选 1 → 各禁 2 → 各选 1 → 各禁 2 → 剩 1<br>
+          · BO7：各禁 2 → 各选 1 → 各禁 2 → 各选 1 → 各禁 2 → 各选 1 → 各禁 2 → 剩 1<br>
+          · BO9：各禁 1 → 各选 1 →（重复 4 轮）→ 剩 1<br>
+          总步数 = 角色池 − 1，所以走完流程<b>必定只剩 1 位</b>屠夫既没被 Ban 也没被 Pick，它就是「剩余杀手」。
+        </div>
+      </details>
+      <details>
+        <summary>模式与规则细节</summary>
+        <div class="hint" style="margin-top:6px">
+          · 默认「穿插流程」，顺序由系统协调，点卡牌即执行当前那一步，无法乱序；<br>
+          · 需要自己掌控节奏时，勾选「<b>自由模式</b>」，即回到 Ban / Pick 两套独立计数、随时切换的用法（此时可选「严格模式」要求先 Ban 完）；<br>
+          · 切换先手方 / 流程模式 / 赛制都会重置当前流程（会先询问）；<br>
+          · 顺序表里的「局次」= 序号，第 N 位屠夫对应第 N 局；<br>
+          · 快捷键：<b>1</b> Ban 模式，<b>2</b> Pick 模式，<b>Ctrl+Z</b> 撤销。
+        </div>
+      </details>
+      <details>
+        <summary>自定义与预设</summary>
+        <div class="hint" style="margin-top:6px">
+          · 在「② 角色池来源 → 手动编辑」里勾选/取消屠夫，即可组成自定义角色池（抽签只在勾选项里随机）；<br>
+          · 「保存为我的预设」会把当前勾选保存到本机浏览器（localStorage），赛事预设与我的预设分开保存、互不影响；<br>
+          · 「导出 / 导入 JSON」可在不同电脑或队友之间传递角色池；<br>
+          · 若版本更新出现新屠夫，用「＋ 添加到屠夫总表」补充即可；<br>
+          · 内置赛事预设的<b>来源与局限</b>会显示在下拉框下方：DBDL / 世界杯依据公开逐局记录归纳，OSL 官方名单当前无法公开获取，均为<b>参考池</b>，请按赛事实际规则勾选调整后再保存为自己的预设。
+        </div>
+      </details>
+    </section>
+  </aside>
+
+  <!-- ================= 主区 ================= -->
+  <section class="main">
+    <div class="panel">
+      <h2>Ban / Pick 操作台 <span class="sub" id="flowHint">穿插流程：Ban 之间穿插 Pick</span></h2>
+      <div class="modes">
+        <div class="mode on" id="modeBan">
+          <div class="t"><span>🚫 Ban 模式</span><span id="banLeftTxt" class="counter"></span></div>
+          <div class="d" id="banTurnTxt">—</div>
+        </div>
+        <div class="mode pick" id="modePick">
+          <div class="t"><span>✅ Pick 模式</span><span id="pickLeftTxt" class="counter"></span></div>
+          <div class="d" id="pickTurnTxt">—</div>
+        </div>
+      </div>
+      <div id="timelineBox" class="timeline"></div>
+      <div class="status" style="margin-top:12px">
+        <div class="turnbox" id="turnBox"></div>
+        <div class="modebar">
+          <label class="counter"><input type="checkbox" id="freeMode"> 自由模式（Ban / Pick 独立切换）</label>
+          <label class="counter" id="strictWrap"><input type="checkbox" id="strictMode"> 严格模式（Ban 全部完成后才可 Pick）</label>
+        </div>
+      </div>
+      <div id="warnBox" style="margin-top:10px"></div>
+    </div>
+
+    <div class="panel">
+      <div class="poolhead">
+        <h2 style="margin:0">角色池 <span class="sub" id="poolHeadInfo"></span></h2>
+        <div class="row tight">
+          <button class="btn sm" id="finishBtn" disabled>🏁 完成选择：剩余杀手入池</button>
+          <button class="btn sm" id="fullListBtn">查看全部屠夫名单</button>
+        </div>
+      </div>
+      <div class="grid" id="board"></div>
+    </div>
+
+    <div class="panel">
+      <h2>选择顺序表 <span class="sub">按选择顺序编号 · 最后为剩余杀手</span></h2>
+      <div id="resultBox"><div class="empty">尚未开始：请先选择赛制并抽取角色池。</div></div>
+      <div class="banlist" id="banResult"></div>
+      <div class="banlist" id="logResult"></div>
+    </div>
+  </section>
+</div>
+
+<div id="toast"></div>
+
+<footer class="foot">
+  <p><b>非官方社区工具</b>：本项目与 Behaviour Interactive 及《黎明杀机》（Dead by Daylight）官方无任何关联，
+     未被官方授权、认可或赞助。工具不使用游戏美术、图标、音频、字体等任何游戏素材，
+     界面示意图为自绘图表；屠夫名称仅用于指代游戏内角色，相关商标与角色权利归各自权利人所有。</p>
+  <p>内置赛事预设为社区依据公开资料整理的<b>参考池</b>，与各赛事主办方无隶属或合作关系，
+     赛事名称仅用于说明规则参照对象；正式比赛请以主办方公布的最新规则为准。</p>
+</footer>
+
+<script>
+/* ==================== js/data/killers.js ==================== */
+/* =========================================================
+   屠夫总表数据（英文名 / 官方中文名 / 搜索别名 / 章节）
+   ========================================================= */
+
+const KILLERS = [
+  {id:'trapper',    cn:'陷阱杀手',  en:'The Trapper',      alias:'夹子 夹哥 trapper',      year:2016, ch:'基础游戏'},
+  {id:'wraith',     cn:'幽灵',      en:'The Wraith',       alias:'隐身 幽灵杀手 wraith',   year:2016, ch:'基础游戏'},
+  {id:'hillbilly',  cn:'电锯杀手',  en:'The Hillbilly',    alias:'乡下人 电锯 billy',      year:2016, ch:'基础游戏'},
+  {id:'nurse',      cn:'护士',      en:'The Nurse',        alias:'nurse 闪现',             year:2016, ch:'The Last Breath'},
+  {id:'shape',      cn:'迈克尔·迈尔斯', en:'The Shape',    alias:'麦尔斯 麦叔 迈克尔 麦克尔 michael myers shape 月光光心慌慌', year:2016, ch:'HALLOWEEN'},
+  {id:'hag',        cn:'妖巫',      en:'The Hag',          alias:'女巫 李奶奶 老巫婆 hag',  year:2016, ch:'Of Flesh and Mud'},
+  {id:'doctor',     cn:'医生',      en:'The Doctor',       alias:'doctor 杨教授',          year:2017, ch:'Spark of Madness'},
+  {id:'huntress',   cn:'女猎手',    en:'The Huntress',     alias:'兔妈 huntress',          year:2017, ch:'A Lullaby for the Dark'},
+  {id:'cannibal',   cn:'食人魔',    en:'The Cannibal',     alias:'皮脸 电锯杀人狂 德州 cannibal leatherface', year:2017, ch:'LEATHERFACE'},
+  {id:'nightmare',  cn:'梦魇',      en:'The Nightmare',    alias:'弗莱迪 佛莱迪 freddy',   year:2017, ch:'A Nightmare on Elm Street'},
+  {id:'pig',        cn:'门徒',      en:'The Pig',          alias:'猪女 猪妹 电锯惊魂 pig',  year:2018, ch:'The SAW Chapter'},
+  {id:'clown',      cn:'小丑',      en:'The Clown',        alias:'clown 马戏团',           year:2018, ch:'Curtain Call'},
+  {id:'spirit',     cn:'怨灵',      en:'The Spirit',       alias:'凛 鬼灵 spirit',         year:2018, ch:'Shattered Bloodline'},
+  {id:'legion',     cn:'军团',      en:'The Legion',       alias:'legion 弗兰克',          year:2018, ch:'Darkness Among Us'},
+  {id:'plague',     cn:'瘟疫',      en:'The Plague',       alias:'plague 祭司',            year:2019, ch:'Demise of the Faithful'},
+  {id:'ghostface',  cn:'鬼面',      en:'The Ghost Face',   alias:'鬼脸 尖叫 ghostface',    year:2019, ch:'Ghost Face'},
+  {id:'demogorgon', cn:'魔王',      en:'The Demogorgon',   alias:'怪奇物语 demogorgon 菊花怪', year:2019, ch:'Stranger Things'},
+  {id:'oni',        cn:'鬼武士',    en:'The Oni',          alias:'鬼武者 鬼 武士 oni',     year:2019, ch:'Cursed Legacy'},
+  {id:'deathslinger',cn:'死亡枪手', en:'The Deathslinger', alias:'枪手 死神枪手 牛仔 deathslinger', year:2020, ch:'Chains of Hate'},
+  {id:'executioner',cn:'处刑者',    en:'The Executioner',  alias:'三角头 寂静岭 金字塔头 executioner', year:2020, ch:'Silent Hill'},
+  {id:'blight',     cn:'枯萎者',    en:'The Blight',       alias:'枯萎 药剂 blight',       year:2020, ch:'Descend Beyond'},
+  {id:'twins',      cn:'连体婴',    en:'The Twins',        alias:'双胞胎 孪生 twins 维克多', year:2020, ch:'A Binding of Kin'},
+  {id:'trickster',  cn:'骗术师',    en:'The Trickster',    alias:'骗子 小丑偶像 偶像 trickster', year:2021, ch:'All-Kill'},
+  {id:'nemesis',    cn:'追踪者',    en:'The Nemesis',      alias:'追迹者 生化危机 暴君 nemesis', year:2021, ch:'Resident Evil'},
+  {id:'cenobite',   cn:'钉子头',    en:'The Cenobite',     alias:'猛鬼追魂 修道士 pinhead cenobite', year:2021, ch:'Hellraiser'},
+  {id:'artist',     cn:'艺术家',    en:'The Artist',       alias:'画师 鸟姐 artist',       year:2021, ch:'Portrait of a Murder'},
+  {id:'onryo',      cn:'贞子',      en:'The Onryō',        alias:'午夜凶铃 山村贞子 onryo sadako', year:2022, ch:'Sadako Rising'},
+  {id:'dredge',     cn:'影魔',      en:'The Dredge',       alias:'泥怪 德雷奇 梦魇之影 dredge', year:2022, ch:'Roots of Dread'},
+  {id:'mastermind', cn:'操纵者',    en:'The Mastermind',   alias:'威斯克 威斯卡 阿尔伯特 wesker', year:2022, ch:'Resident Evil: PROJECT W'},
+  {id:'knight',     cn:'骑士',      en:'The Knight',       alias:'knight 塔尔霍斯',        year:2022, ch:'Forged in Fog'},
+  {id:'skullmerchant',cn:'白骨商人',en:'The Skull Merchant',alias:'骷髅商人 骷髅 商人 skull merchant', year:2023, ch:'Tools of Torment'},
+  {id:'singularity',cn:'奇点',      en:'The Singularity',  alias:'赫克斯 hux singularity', year:2023, ch:'End Transmission'},
+  {id:'xenomorph',  cn:'异形',      en:'The Xenomorph',    alias:'alien 异形 xenomorph',   year:2023, ch:'Alien'},
+  {id:'goodguy',    cn:'好孩子',    en:'The Good Guy',     alias:'恰吉 恰奇 鬼娃 chucky goodguy', year:2023, ch:'Chucky'},
+  {id:'unknown',    cn:'未知恶物',  en:'The Unknown',      alias:'未知者 神秘人 unknown',  year:2024, ch:'All Things Wicked'},
+  {id:'lich',       cn:'巫妖',      en:'The Lich',         alias:'维克那 维卡 龙与地下城 vecna lich', year:2024, ch:'Dungeons & Dragons'},
+  {id:'darklord',   cn:'德古拉',    en:'The Dark Lord',    alias:'吸血鬼 恶魔城 dracula darklord', year:2024, ch:'Castlevania'},
+  {id:'houndmaster',cn:'训犬师',    en:'The Houndmaster',  alias:'猎犬大师 猎犬 houndmaster', year:2024, ch:'Doomed Course'},
+  {id:'ghoul',      cn:'食尸鬼',    en:'The Ghoul',        alias:'金木研 东京喰种 喰种 kaneki ghoul', year:2025, ch:'Tokyo Ghoul'},
+  {id:'animatronic',cn:'机械玩偶',  en:'The Animatronic',  alias:'弹簧陷阱 玩具熊 springtrap fnaf', year:2025, ch:'Five Nights at Freddy\'s'},
+  {id:'krasue',     cn:'克拉苏',    en:'The Krasue',       alias:'飞头蛮 krasue',          year:2025, ch:'Sinister Grace'},
+  {id:'first',      cn:'一号',      en:'The First',        alias:'原初者 第一 怪奇物语 first', year:2026, ch:'Stranger Things Chapter 2'},
+  {id:'slasher',    cn:'杀人魔',    en:'The Slasher',      alias:'杰森 十三号星期五 jason slasher', year:2026, ch:'Friday the 13th'},
+  {id:'judgment',   cn:'审判者',    en:'The Inquisitor',   alias:'审判 裁判官 Judgment inquisitor 天界', year:2026, ch:'Chorus of Sin'}
+];
+
+/* ==================== js/data/presets.js ==================== */
+/* =========================================================
+   赛事与社区预设、赛制常量
+   ========================================================= */
+
+/* ---------- 赛事 / 社区预设 ----------
+   核实说明（2026-10 检索）：
+   · DBDL Season X、DBD World Cup 的官方规则书文档（Google Docs / 赛事官网）当前均无法公开抓取，
+     因此这两个预设依据 Liquipedia 逐局出场记录归纳（Nurse/Blight 在 DBDL 全季未出场、Nurse 在世界杯仅出场 1 次）；
+   · 虎牙万圣赛有明文「禁用护士/枯萎者/凛」；PHG 1v1 有公开的固定 16 屠夫池；
+   · OSL 官方名单未检索到（官网/文档需人机验证），此处为占位参考池，请按实际赛事名单勾选后「保存为我的预设」。
+   所有预设都可在「手动编辑」中自由增删。 */
+const BUILTIN_PRESETS = [
+  { id:'all', name:'全部屠夫（默认 · 44 位）', cat:'基础', source:'',
+    note:'不做限制，从当前 44 位屠夫中随机抽取。', ids:null },
+
+  { id:'dbdl', name:'DBDL Season X（参考池）', cat:'赛事预设',
+    source:'https://liquipedia.net/lab/api.php?action=parse&page=Dbd/Dbdl%20season%20x&format=json&prop=wikitext',
+    note:'依据 Liquipedia 对 DBDL Season X 的逐局记录：整个赛季 Nurse（护士）、Blight（枯萎者）均未出场，故按「池内禁用」处理；其余屠夫开放。',
+    exclude:['nurse','blight'] },
+
+  { id:'worlds', name:'DBD World Cup（参考池）', cat:'赛事预设',
+    source:'https://liquipedia.net/lab/api.php?action=parse&page=Dbd/Dbd%20world%20cup&format=json&prop=wikitext',
+    note:'依据 Liquipedia 世界杯逐局记录：Nurse 仅出现 1 次（其余 德古拉、食尸鬼、操纵者、巫妖 等大量出场），无明显全面禁用名单；这里按惯例排除 护士。',
+    exclude:['nurse'] },
+
+  { id:'huya', name:'虎牙万圣赛（明文禁用）', cat:'赛事预设',
+    source:'https://blog.huya.com/mblog/index?detail=true&id=49125&tab=news',
+    note:'赛事规则原文：禁用 护士、枯萎者、凛（怨灵）。属 5v5 车轮战规则，可直接用于参照。',
+    exclude:['nurse','blight','spirit'] },
+
+  { id:'phg', name:'PHG 1v1 固定 16 屠夫池', cat:'赛事预设',
+    source:'https://mcpleh.github.io/PHGBALANCEDBD/rules1x1.html',
+    note:'公开规则中的固定可选出战名单（16 位）：枯萎者 / 小丑 / 德古拉 / 魔王 / 医生 / 电锯杀手 / 操纵者 / 梦魇 / 食人魔 / 门徒 / 陷阱杀手 / 未知恶物 / 幽灵 / 处刑者 / 贞子 / 巫妖。护士与怨灵不在池内，无 Ban 阶段。',
+    ids:['blight','clown','darklord','demogorgon','doctor','hillbilly','mastermind','nightmare','cannibal','pig',
+         'trapper','unknown','wraith','executioner','onryo','lich'] },
+
+  { id:'osl', name:'OSL（参考池 · 官方名单未获取）', cat:'赛事预设', source:'',
+    note:'OSL 官方屠夫名单/规则文档当前需人机验证，无法公开抓取，故本预设按日韩赛事常见做法仅排除 护士/枯萎者，属占位参考池 —— 请按实际赛事名单勾选后「保存为我的预设」。',
+    exclude:['nurse','blight'] },
+
+  { id:'noTop', name:'竞技通用池 · 无 S 级', cat:'赛事预设',
+    source:'',
+    note:'社区最通用的竞技约定：排除 护士、枯萎者、怨灵、艺术家 等顶端强度屠夫。',
+    exclude:['nurse','blight','spirit','artist'] }
+];
+
+const FORMATS = {
+  BO1:{bo:1,pool:5}, BO3:{bo:3,pool:11}, BO5:{bo:5,pool:17}, BO7:{bo:7,pool:23}, BO9:{bo:9,pool:17}
+};
+
+/* ==================== js/core/store.js ==================== */
+/* =========================================================
+   本地存储（预设、自定义屠夫、会话进度）与屠夫查询
+   ========================================================= */
+
+/* =========================================================
+   存储
+   ========================================================= */
+const LS_KEY = 'dbd-killer-bp-v1';
+const SESSION_KEY = 'dbd-killer-bp-session-v1';
+let store = { userPresets:[], extraKillers:[], teams:{A:'A队',B:'B队'}, format:'BO5', lastPreset:'all', strict:false };
+function loadStore(){
+  try{ const raw = localStorage.getItem(LS_KEY); if(raw) Object.assign(store, JSON.parse(raw)); }catch(e){}
+}
+function saveStore(){ try{ localStorage.setItem(LS_KEY, JSON.stringify(store)); }catch(e){} }
+function saveSession(){
+  try{ localStorage.setItem(SESSION_KEY, JSON.stringify({t:Date.now(), s:{...state, history:[]}})); }catch(e){}
+}
+function restoreSession(){
+  try{
+    const raw = localStorage.getItem(SESSION_KEY); if(!raw) return false;
+    const snap = JSON.parse(raw);
+    if(!snap?.s?.pool?.length) return false;
+    if(snap.s.finished) return false;                       // 已结束的对局不自动恢复
+    if(Date.now() - (snap.t||0) > 12*3600*1000) return false; // 超过 12 小时视为过期
+    state = {...freshState(), ...snap.s, history:[]};
+    return true;
+  }catch(e){ return false; }
+}
+
+function master(){
+  const extra = (store.extraKillers||[]).map((k,i)=>({id:'x'+i, cn:k.cn, en:k.en||k.cn, alias:(k.alias||''), year:0, ch:'自定义添加', custom:true}));
+  return KILLERS.concat(extra);
+}
+const K = id => master().find(k=>k.id===id) || {cn:id, en:'', alias:''};
+const allPresets = () => BUILTIN_PRESETS.concat((store.userPresets||[]).map(p=>({...p, cat:'我的预设', user:true})));
+
+/* ==================== js/core/state.js ==================== */
+/* =========================================================
+   对局状态定义
+   ========================================================= */
+
+/* =========================================================
+   状态
+   ========================================================= */
+let state = null;
+function freshState(){
+  return {
+    format: store.format || 'BO5',
+    teams:{A:store.teams?.A||'A队', B:store.teams?.B||'B队'},
+    first:'A',                 // 先手方（先 Ban、先 Pick）
+    baseIds: master().map(k=>k.id),      // 可抽取白名单
+    presetId:'all',
+    manual:{pool:null, bans:null, picks:null},
+    pool:[], stats:{}, banUsed:{A:0,B:0}, pickUsed:{A:0,B:0},
+    banTurn:'A', pickTurn:'A', mode:'ban',
+    bans:[], picks:[], log:[],
+    leftover:null, leftoverChosen:false, finished:false,
+    freeMode:false, strict: !!store.strict, history:[], warning:''
+  };
+}
+
+/* ==================== js/core/rules.js ==================== */
+/* =========================================================
+   赛制规则计算 + 穿插流程（Ban 之间穿插 Pick）序列生成
+   ========================================================= */
+
+/* ---------- 规则计算 ---------- */
+function num(v, dflt){ const n = (v===null||v===undefined||v==='') ? NaN : Number(v); return (Number.isFinite(n) && n>=0) ? n : dflt; }
+function rules(){
+  const f = FORMATS[state.format];
+  const bo = f.bo;
+  const poolSize     = num(state.manual.pool,  f.pool);
+  const bansPerTeam  = num(state.manual.bans,  Math.max(0, Math.floor((poolSize-bo)/2)));
+  const picksPerTeam = num(state.manual.picks, Math.max(0, Math.floor((bo-1)/2)));
+  return {bo, poolSize, bansPerTeam, picksPerTeam,
+    bansTotal:bansPerTeam*2, picksTotal:picksPerTeam*2, resultCount:bo,
+    leftoverCount: poolSize - bansPerTeam*2 - picksPerTeam*2};
+}
+const other = t => t==='A'?'B':'A';
+const banLeft  = t => Math.max(0, rules().bansPerTeam  - state.banUsed[t]);
+const pickLeft = t => Math.max(0, rules().picksPerTeam - state.pickUsed[t]);
+const usedIds  = () => Object.keys(state.stats);
+const remainingIds = () => state.pool.filter(id=>!state.stats[id] && !(state.leftoverChosen && state.leftover===id));
+const bansDone  = () => banLeft('A')===0 && banLeft('B')===0;
+const picksDone = () => pickLeft('A')===0 && pickLeft('B')===0;
+
+/* ---------- 穿插流程：把 Pick 均匀插进 Ban 之间 ----------
+   设计思路：
+   · 每个队各有 b 次 Ban、k 次 Pick，共 n = b + k 个自己的回合；
+   · 双方严格轮流（A→B→A→B…），因此第 i 步属于哪一队是固定的：先手方拿奇数步；
+   · 在每一队自己的 n 个回合里，把 k 次 Pick 均匀铺开（两侧留 Ban），
+     于是整体的节奏就是「各禁 N 位 → 各选 1 位 → 各禁 N 位 → …」；
+   · 总步数 = 2(b+k) = 角色池 − 1，因此走完流程必然只剩 1 位屠夫作为「剩余杀手」。
+   --------------------------------------------------------- */
+function pickSlotsFor(n, k){
+  const out = [];
+  if(k<=0) return out;
+  if(k>=n) return Array.from({length:n},(_,i)=>i+1);
+  const cycle = (k*2 >= n);                       // Pick 占比很高时（如 BO9）改用等距循环
+  for(let i=1;i<=k;i++){
+    let p = cycle ? Math.round(i*n/k) : Math.round(i*(n+1)/(k+1));
+    p = Math.min(n, Math.max(1, p));
+    while(out.indexOf(p)>=0 && p<n) p++;
+    while(out.indexOf(p)>=0 && p>1) p--;
+    out.push(p);
+  }
+  return out.sort((a,b)=>a-b);
+}
+function buildSequence(r){
+  const b = r.bansPerTeam, k = r.picksPerTeam, n = b + k;
+  if(n<=0) return [];
+  const slots = pickSlotsFor(n, k);
+  const own = [];                                     // 每一队自己 n 个回合的动作
+  for(let t=1;t<=n;t++) own.push(slots.indexOf(t)>=0 ? 'pick' : 'ban');
+  const s = state.first || 'A';
+  const seq = [];
+  for(let t=1;t<=2*n;t++){                            // 双方轮流：奇数步先手方，偶数步另一方
+    const ownIdx = Math.floor((t-1)/2);
+    seq.push({team:(t%2===1)? s : other(s), action: own[ownIdx]});
+  }
+  return seq;
+}
+const sequence = () => buildSequence(rules());
+const stepIndex = () => state.bans.length + state.picks.length;   // 已完成步数 = 下一步下标
+function currentStep(){ const s = sequence(); const i = stepIndex(); return i < s.length ? {index:i, team:s[i].team, action:s[i].action} : null; }
+function syncTurns(){
+  const s = sequence(), i = stepIndex();
+  const nb = s.find((x,k)=>k>=i && x.action==='ban');
+  const np = s.find((x,k)=>k>=i && x.action==='pick');
+  if(nb) state.banTurn = nb.team;
+  if(np) state.pickTurn = np.team;
+}
+/* 用文字描述某一赛制的穿插节奏，例如「各禁2 → 各选1 → 各禁2」 */
+function patternText(bo){
+  const f = FORMATS[bo];
+  const b = Math.max(0, Math.floor((f.pool - f.bo)/2));
+  const k = Math.max(0, Math.floor((f.bo - 1)/2));
+  const n = b + k;
+  if(n<=0) return '—';
+  const slots = pickSlotsFor(n, k);
+  const own = [];
+  for(let t=1;t<=n;t++) own.push(slots.indexOf(t)>=0 ? 'pick' : 'ban');
+  const g = [];
+  own.forEach(a=>{ const last = g[g.length-1]; if(last && last.a===a) last.c++; else g.push({a,c:1}); });
+  return g.map(x=>`各${x.a==='ban'?'禁':'选'}${x.c}`).join(' → ');
+}
+
+/* ==================== js/ui/render-core.js ==================== */
+/* =========================================================
+   渲染工具函数与总渲染入口
+   ========================================================= */
+
+/* =========================================================
+   渲染
+   ========================================================= */
+const $ = s => document.querySelector(s);
+const esc = s => String(s).replace(/[&<>"]/g, c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
+function toast(msg){
+  const box = $('#toast'); const d = document.createElement('div'); d.textContent = msg; box.appendChild(d);
+  setTimeout(()=>{ d.style.opacity='0'; d.style.transition='opacity .3s'; setTimeout(()=>d.remove(),320); }, 2200);
+}
+function teamName(t){ return state.teams[t] || (t+'队'); }
+function teamCls(t){ return t==='A'?'tA':'tB'; }
+
+function snapshot(){
+  state.history.push(JSON.stringify({...state, history:[]}));
+  if(state.history.length>120) state.history.shift();
+}
+function undo(){
+  if(!state.history.length){ toast('没有可撤销的操作'); return; }
+  const prev = JSON.parse(state.history.pop());
+  const hist = state.history; state = {...prev, history:hist};
+  render(); toast('已撤销上一步');
+}
+
+/* ==================== js/ui/render-setup.js ==================== */
+/* =========================================================
+   渲染：赛制 / 队伍 / 规则速查
+   ========================================================= */
+
+/* ---------- 渲染：赛制 / 队伍 / 规则 ---------- */
+function renderSetup(){
+  $('#formatChips').innerHTML = Object.keys(FORMATS).map(f=>
+    `<div class="chip ${state.format===f?'on':''}" data-fmt="${f}">${f}</div>`).join('');
+  $('#teamA').value = state.teams.A; $('#teamB').value = state.teams.B;
+  $('#firstSide').value = state.first;
+  $('#flowMode').value = state.freeMode ? 'free' : 'mixed';
+  $('#strictMode').checked = state.strict;
+  $('#freeMode').checked = !!state.freeMode;
+  const r = rules();
+  $('#ruleSummary').textContent = `${state.format} ｜ 角色池 ${r.poolSize} ｜ 每队 Ban ${r.bansPerTeam} ｜ 每队 Pick ${r.picksPerTeam} ｜ 结果 ${r.resultCount}`;
+
+  // 高级手动覆盖
+  const f = FORMATS[state.format];
+  $('#manualBox').innerHTML = `
+    <details>
+      <summary>高级：手动覆盖角色池 / Ban / Pick 次数（默认按赛制自动计算）</summary>
+      <div class="row">
+        <label class="fld">角色池抽取数<input type="number" min="1" id="manPool" placeholder="自动：${f.pool}" value="${state.manual.pool===null||state.manual.pool===undefined?'':state.manual.pool}"></label>
+        <label class="fld">每队 Ban 次数<input type="number" min="0" id="manBan" placeholder="自动：${Math.floor((r.poolSize-r.bo)/2)}" value="${state.manual.bans===null?'':state.manual.bans}"></label>
+        <label class="fld">每队 Pick 次数<input type="number" min="0" id="manPick" placeholder="自动：${Math.floor((r.bo-1)/2)}" value="${state.manual.picks===null?'':state.manual.picks}"></label>
+      </div>
+      <div class="row tight" style="margin-top:8px">
+        <button class="btn sm" id="manReset">恢复自动</button>
+        <span class="hint">剩余杀手数量 = 池 − Ban − Pick；恰好剩 1 位时可一键结算入池，剩多位时可手动点选。</span>
+      </div>
+    </details>`;
+  $('#manPool').addEventListener('change', e=>{ state.manual.pool = e.target.value===''?null:Number(e.target.value); render(); });
+  $('#manBan').addEventListener('change', e=>{ state.manual.bans = e.target.value===''?null:Number(e.target.value); render(); });
+  $('#manPick').addEventListener('change', e=>{ state.manual.picks = e.target.value===''?null:Number(e.target.value); render(); });
+  $('#manReset').addEventListener('click', ()=>{ state.manual={pool:null,bans:null,picks:null}; render(); toast('已恢复自动计算'); });
+
+  // 规则速查表
+  $('#ruleTableBox').innerHTML = `<table class="ruleTable">
+    <thead><tr><th>赛制</th><th>角色池</th><th>全局Ban</th><th>每队Ban</th><th>每队Pick</th><th>剩余</th><th>结果</th></tr></thead>
+    <tbody>${Object.entries(FORMATS).map(([f,v])=>{
+      const b=Math.floor((v.pool-v.bo)/2), p=Math.floor((v.bo-1)/2);
+      return `<tr class="${state.format===f?'active':''}"><td>${f}</td><td>${v.pool}</td><td>${b*2}</td><td>${b}</td><td>${p}</td><td>1</td><td>${v.bo}</td></tr>`;
+    }).join('')}</tbody></table>
+    <div style="margin-top:8px">
+      <div class="counter" style="margin-bottom:4px">穿插流程节奏（双方轮流，A→B→A→B…）：</div>
+      ${Object.keys(FORMATS).map(f=>`<div class="${state.format===f?'':'counter'}" style="${state.format===f?'':'opacity:.6'}">
+        <span class="flowtag">${f}</span> ${patternText(f)}</div>`).join('')}
+    </div>`;
+}
+
+/* ==================== js/ui/render-presets.js ==================== */
+/* =========================================================
+   渲染：角色池来源与屠夫勾选
+   ========================================================= */
+
+/* ---------- 渲染：角色池来源 / 预设 ---------- */
+function renderPresets(){
+  const groups = {'基础':[], '赛事预设':[], '我的预设':[]};
+  allPresets().forEach(p=>{ (groups[p.cat] = groups[p.cat]||[]).push(p); });
+  let html = '';
+  Object.entries(groups).forEach(([cat,list])=>{
+    if(!list.length) return;
+    html += `<optgroup label="${cat}">` + list.map(p=>
+      `<option value="${p.id}" ${state.presetId===p.id?'selected':''}>${esc(p.name)}</option>`).join('') + '</optgroup>';
+  });
+  html += `<optgroup label="自定义"><option value="__custom" ${state.presetId==='__custom'?'selected':''}>（手动勾选，未保存）</option></optgroup>`;
+  $('#presetSelect').innerHTML = html;
+
+  const p = allPresets().find(x=>x.id===state.presetId);
+  const src = p?.source ? `<a href="${p.source}" target="_blank" rel="noreferrer">来源</a>` : '';
+  $('#poolSrcInfo').textContent = `${state.baseIds.length} / ${master().length} 位屠夫可选`;
+  $('#srcInfo').innerHTML = p
+    ? `<div><b>${esc(p.name)}</b> ${src}</div><div>${esc(p.note||'')}</div>`
+    : `<div><b>自定义池</b>（手动勾选）</div>`;
+  renderKillerPick();
+}
+function renderKillerPick(){
+  const q = ($('#killFilter')?.value||'').trim().toLowerCase();
+  const sel = new Set(state.baseIds);
+  $('#killerPick').innerHTML = master().filter(k=>{
+    if(!q) return true;
+    return (k.cn+' '+k.en+' '+(k.alias||'')).toLowerCase().includes(q);
+  }).map(k=>`<label class="${sel.has(k.id)?'on':''}" title="${esc(k.en)} · ${esc(k.ch||'')}">
+      <input type="checkbox" data-kid="${k.id}" ${sel.has(k.id)?'checked':''}> ${esc(k.cn)}</label>`).join('');
+}
+
+/* ==================== js/ui/render-board.js ==================== */
+/* =========================================================
+   渲染：操作台 / 时间轴 / 角色池 / 结果表
+   ========================================================= */
+
+/* ---------- 渲染：操作台 ---------- */
+function renderTimeline(){
+  const mixed = !state.freeMode;
+  if(!state.pool.length || !mixed){ $('#timelineBox').innerHTML = ''; return; }
+  const seq = sequence(), idx = stepIndex();
+  const chips = seq.map((s,i)=>{
+    const cls = ['step', s.action==='pick' ? 'pickStep' : 'banStep'];
+    if(i < idx) cls.push('done'); else if(i === idx) cls.push('now');
+    return `<span class="${cls.join(' ')}">${i+1}<b>${esc(teamName(s.team))}</b>${s.action==='ban'?'Ban':'Pick'}</span>`;
+  }).join('');
+  const tail = `<span class="step tail ${idx>=seq.length?'now':''}">${seq.length+1}<b>剩余杀手</b>1 位</span>`;
+  $('#timelineBox').innerHTML =
+    `<div class="lead">穿插流程 · 共 ${seq.length} 步（已完成 ${Math.min(idx,seq.length)} 步）+ 1 位剩余杀手 ＝ 角色池 ${seq.length+1} 位</div>` +
+    chips + tail;
+}
+
+function renderControls(){
+  renderTimeline();
+  const mixed = !state.freeMode;
+  const cur = mixed ? currentStep() : null;
+  const activeAction = mixed ? (cur ? cur.action : null) : state.mode;
+  $('#modeBan').classList.toggle('on', activeAction==='ban');
+  $('#modePick').classList.toggle('on', activeAction==='pick');
+  $('#strictWrap').style.display = mixed ? 'none' : '';
+  $('#flowHint').textContent = mixed ? '穿插流程：Ban 之间穿插 Pick（顺序由系统协调）' : '自由模式：Ban / Pick 两套计数独立切换';
+  $('#banLeftTxt').textContent = `剩余 ${banLeft('A')+banLeft('B')} 次`;
+  $('#pickLeftTxt').textContent = `剩余 ${pickLeft('A')+pickLeft('B')} 次`;
+  if(mixed){
+    const seq = sequence(), idx = stepIndex();
+    const nb = seq.find((x,k)=>k>=idx && x.action==='ban');
+    const np = seq.find((x,k)=>k>=idx && x.action==='pick');
+    $('#banTurnTxt').textContent = bansDone() ? 'Ban 已全部完成'
+      : (nb ? `下一次 Ban：${teamName(nb.team)}（第 ${seq.indexOf(nb)+1} 步）` : 'Ban 已全部完成');
+    $('#pickTurnTxt').textContent = picksDone() ? 'Pick 已全部完成'
+      : (np ? `下一次 Pick：${teamName(np.team)}（第 ${seq.indexOf(np)+1} 步）` : 'Pick 已全部完成');
+  }else{
+    $('#banTurnTxt').textContent = bansDone() ? 'Ban 阶段已完成' : `轮到：${teamName(state.banTurn)}（该队还需 ${banLeft(state.banTurn)} 次）`;
+    $('#pickTurnTxt').textContent = picksDone() ? 'Pick 阶段已完成' : `轮到：${teamName(state.pickTurn)}（该队还需 ${pickLeft(state.pickTurn)} 次）`;
+  }
+
+  const pills = [];
+  pills.push(`<span class="counter">Ban：<b class="tA">${teamName('A')} ${banLeft('A')}</b> / <b class="tB">${teamName('B')} ${banLeft('B')}</b></span>`);
+  pills.push(`<span class="counter">Pick：<b class="tA">${teamName('A')} ${pickLeft('A')}</b> / <b class="tB">${teamName('B')} ${pickLeft('B')}</b></span>`);
+  if(state.finished){
+    pills.unshift(`<span class="turnpill done">✔ 本次 Ban/Pick 已完成</span>`);
+  }else if(!state.pool.length){
+    pills.unshift(`<span class="turnpill">请先抽取角色池</span>`);
+  }else if(mixed){
+    if(cur){
+      const seq = sequence();
+      pills.unshift(`<span class="turnpill ${cur.team}">${cur.action==='ban'?'🚫':'✅'} 第 ${cur.index+1}/${seq.length} 步：${teamName(cur.team)} ${cur.action==='ban'?'Ban':'Pick'}</span>`);
+    }else{
+      pills.unshift(`<span class="turnpill done">流程已走完，剩 ${remainingIds().length} 位待结算</span>`);
+    }
+  }else if(state.mode==='ban'){
+    const t = bansDone() ? null : state.banTurn;
+    pills.unshift(t ? `<span class="turnpill ${t}">🚫 当前：${teamName(t)} · Ban</span>` : `<span class="turnpill done">Ban 已完成，可切换 Pick 模式</span>`);
+  }else{
+    const t = picksDone() ? null : state.pickTurn;
+    pills.unshift(t ? `<span class="turnpill ${t}">✅ 当前：${teamName(t)} · Pick</span>` : `<span class="turnpill done">Pick 已完成</span>`);
+  }
+  if(state.pool.length) pills.push(`<span class="counter">池内剩 <b>${remainingIds().length}</b> 位可选</span>`);
+  $('#turnBox').innerHTML = pills.join('');
+
+  // 提示 / 结算按钮
+  const warns = [];
+  if(state.warning) warns.push(`<div class="warn">${esc(state.warning)}</div>`);
+  const rem = remainingIds().length;
+  const canFinish = !state.finished && bansDone() && picksDone() && (rem<=1 || state.leftoverChosen);
+  if(state.pool.length && !state.finished){
+    if(bansDone() && picksDone()){
+      if(rem>1) warns.push(`<div class="warn">已无 Ban/Pick 次数，池内还剩 ${rem} 位屠夫。请点击其中 1 位作为「剩余杀手」（该屠夫会排在顺序表最后）。</div>`);
+      else if(rem===1) warns.push(`<div class="warn">Ban/Pick 已完成，点击右侧「完成选择」把最后剩余的屠夫加入结果池。</div>`);
+      else if(rem===0) warns.push(`<div class="warn">池内已无剩余屠夫（当前设置下剩余数为 0），无法产生「剩余杀手」。</div>`);
+    }else if(!bansDone() && state.mode==='pick' && state.strict){
+      warns.push(`<div class="warn">严格模式：还有 ${banLeft('A')+banLeft('B')} 次 Ban 未完成，暂时不能 Pick。</div>`);
+    }
+  }
+  if(mixed){
+    $('#modeBan').style.cursor = 'default'; $('#modePick').style.cursor = 'default';
+    $('#modeBan').title = '穿插流程由系统协调顺序，如需手动切换请勾选「自由模式」';
+    $('#modePick').title = '穿插流程由系统协调顺序，如需手动切换请勾选「自由模式」';
+  }else{
+    $('#modeBan').style.cursor = 'pointer'; $('#modePick').style.cursor = 'pointer';
+    $('#modeBan').title = '点击切换到 Ban 模式'; $('#modePick').title = '点击切换到 Pick 模式';
+  }
+  if(!state.finished && state.pool.length && mixed){
+    const c = currentStep();
+    if(c) warns.push(`<div class="hint">穿插流程第 ${c.index+1} 步：<b>${esc(teamName(c.team))} ${c.action==='ban'?'Ban':'Pick'}</b> —— 直接点击角色池里的屠夫即可（顺序由系统协调）。</div>`);
+  }
+  $('#warnBox').innerHTML = warns.join('');
+  $('#finishBtn').disabled = !canFinish;
+  $('#finishBtn').textContent = state.leftoverChosen ? `🏁 完成选择：剩余杀手【${K(state.leftover).cn}】入池` : '🏁 完成选择：剩余杀手入池';
+}
+
+/* ---------- 渲染：角色池面板 ---------- */
+function renderBoard(){
+  const r = rules();
+  if(!state.pool.length){
+    $('#poolHeadInfo').textContent = `未抽取 · ${state.format} 需要 ${r.poolSize} 位`;
+    $('#board').innerHTML = `<div class="empty" style="grid-column:1/-1">点击左侧「🎲 抽取角色池」从已勾选的 ${state.baseIds.length} 位屠夫中随机抽取 ${Math.min(r.poolSize, state.baseIds.length)} 位。</div>`;
+    return;
+  }
+  $('#poolHeadInfo').textContent = `${state.pool.length} 位 · 已用 ${usedIds().length} · 剩 ${remainingIds().length}`;
+  const pickIndex = {}; state.picks.forEach((p,i)=>pickIndex[p.id]=i+1);
+  const leftoverOrder = state.picks.length + 1;
+  $('#board').innerHTML = state.pool.map(id=>{
+    const k = K(id); const st = state.stats[id];
+    let cls = '', tag = '', ord = '';
+    if(st==='ban'){ cls='ban'; tag='BAN'; }
+    else if(st && st.startsWith('pick')){ const t = st.slice(4); cls = t==='A'?'pickA':'pickB'; tag = teamName(t)+' PICK'; ord = '#'+pickIndex[id]; }
+    else if(state.leftoverChosen && state.leftover===id){ cls='leftover'; tag='剩余杀手'; }
+    else if(state.finished && state.leftover===id){ cls='leftover'; tag='剩余杀手'; }
+    else if(bansDone() && picksDone() && remainingIds().length>1){ cls='candidate'; }
+    const isLeft = (state.leftoverChosen && state.leftover===id) || (state.finished && state.leftover===id);
+    const order = isLeft ? '#'+leftoverOrder : ord;
+    return `<div class="card ${cls}" data-kid="${id}" title="${esc(k.en)} · ${esc(k.ch||'')}">
+      ${tag?`<span class="tag">${tag}</span>`:''}
+      <div class="cn">${esc(k.cn)}</div><div class="en">${esc(k.en)}</div>
+      ${order?`<div class="ord">${order}</div>`:''}
+    </div>`;
+  }).join('');
+}
+
+/* ---------- 渲染：结果 ---------- */
+function resultRows(){
+  const rows = state.picks.map((p,i)=>({order:i+1, id:p.id, team:p.team, kind:'pick'}));
+  if(state.finished && state.leftover) rows.push({order:rows.length+1, id:state.leftover, team:null, kind:'leftover'});
+  return rows;
+}
+function renderResult(){
+  const rows = resultRows();
+  if(!rows.length){
+    $('#resultBox').innerHTML = `<div class="empty">${state.pool.length? (state.freeMode? '尚无选择记录。切换「Ban / Pick 模式」点击屠夫卡片即可记录。' : '尚无选择记录。按时间轴提示，点击角色池中的屠夫卡片依次完成 Ban / Pick。') : '尚未开始：请先选择赛制并抽取角色池。'}</div>`;
+  }else{
+    $('#resultBox').innerHTML = `<table>
+      <thead><tr><th style="width:64px">序号</th><th style="width:80px">局次</th><th>屠夫</th><th style="width:150px">选择方</th><th style="width:90px">类型</th></tr></thead>
+      <tbody>${rows.map(rw=>{
+        const k = K(rw.id);
+        const who = rw.kind==='leftover' ? '双方均未选择' : teamName(rw.team);
+        return `<tr><td>${rw.order}</td><td>第 ${rw.order} 局</td>
+          <td><b>${esc(k.cn)}</b> <span class="counter">${esc(k.en)}</span></td>
+          <td class="${rw.kind==='leftover'?'tL':teamCls(rw.team)}">${esc(who)}</td>
+          <td>${rw.kind==='leftover'?'剩余杀手':'Pick'}</td></tr>`;
+      }).join('')}</tbody></table>`;
+  }
+  const ba = state.bans.filter(b=>b.team==='A').map(b=>K(b.id).cn);
+  const bb = state.bans.filter(b=>b.team==='B').map(b=>K(b.id).cn);
+  $('#banResult').innerHTML = (ba.length||bb.length)
+    ? `<div><b>Ban 名单</b></div>
+       <div><span class="a">${esc(teamName('A'))}（${ba.length}）：</span>${ba.length?esc(ba.join('、')):'—'}</div>
+       <div><span class="b">${esc(teamName('B'))}（${bb.length}）：</span>${bb.length?esc(bb.join('、')):'—'}</div>`
+    : '';
+
+  // 行动日志（穿插流程的完整顺序）
+  if(state.log.length){
+    $('#logResult').innerHTML = `<details ${state.finished?'':'open'}>
+      <summary style="cursor:pointer;color:var(--gold);font-weight:700">行动日志（穿插流程 ${state.log.length} 步）</summary>
+      <div class="logline">${state.log.map((a,i)=>
+        `<i>${i+1}.</i> <span class="${a.team==='A'?'a':'b'}">${esc(teamName(a.team))}</span> ·
+         <span class="${a.action==='ban'?'bn':'pk'}">${a.action==='ban'?'Ban':'Pick'}</span> ·
+         <b style="color:var(--txt)">${esc(K(a.id).cn)}</b>`).join('<br>')}
+      </div>
+    </details>`;
+  }else{
+    $('#logResult').innerHTML = '';
+  }
+}
+
+function render(){ renderSetup(); renderPresets(); renderControls(); renderBoard(); renderResult(); saveSession(); }
+
+/* ==================== js/core/actions.js ==================== */
+/* =========================================================
+   流程动作：抽池、Ban/Pick、结算、撤销
+   ========================================================= */
+
+/* =========================================================
+   流程动作
+   ========================================================= */
+function drawPool(){
+  const r = rules();
+  const src = state.baseIds.slice();
+  if(!src.length){ toast('请至少勾选 1 位屠夫'); return; }
+  const need = Math.min(r.poolSize, src.length);
+  if(src.length < r.poolSize) toast(`可抽取屠夫仅 ${src.length} 位，少于 ${state.format} 需要的 ${r.poolSize} 位，已全部抽入`);
+  // Fisher-Yates
+  for(let i=src.length-1;i>0;i--){ const j = Math.floor(Math.random()*(i+1)); [src[i],src[j]]=[src[j],src[i]]; }
+  state.pool = src.slice(0, need);
+  state.stats = {}; state.bans = []; state.picks = []; state.log = []; state.leftover = null; state.leftoverChosen = false;
+  state.banUsed = {A:0,B:0}; state.pickUsed = {A:0,B:0};
+  state.banTurn = state.first; state.pickTurn = state.first;
+  state.mode = sequence()[0]?.action || 'ban';
+  state.finished = false; state.warning = ''; state.history = [];
+  render();
+  toast(`已抽取 ${state.pool.length} 位屠夫组成角色池`);
+}
+function resetFlow(){
+  if(!state.pool.length){ toast('还没有角色池'); return; }
+  if(usedIds().length || state.picks.length){
+    if(!confirm('确定要重置本次 Ban/Pick 流程吗？（保留角色池）')) return;
+  }
+  snapshot();
+  state.stats = {}; state.bans = []; state.picks = []; state.log = []; state.leftover = null; state.leftoverChosen = false;
+  state.banUsed = {A:0,B:0}; state.pickUsed = {A:0,B:0};
+  state.banTurn = state.first; state.pickTurn = state.first;
+  state.mode = sequence()[0]?.action || 'ban';
+  state.finished = false; state.warning = '';
+  render(); toast('已重置流程');
+}
+function setMode(m){
+  if(state.finished){ toast('本次 Ban/Pick 已结束'); return; }
+  if(!state.freeMode){
+    const cur = currentStep();
+    if(!cur){ toast('穿插流程已走完，接下来是结算剩余杀手'); return; }
+    if(cur.action !== m){
+      toast(`穿插流程由系统协调：当前第 ${cur.index+1} 步是「${teamName(cur.team)} ${cur.action==='ban'?'Ban':'Pick'}」。如需手动切换，请勾选「自由模式」。`);
+      return;
+    }
+    state.mode = m; render(); return;
+  }
+  state.mode = m;
+  if(m==='pick' && !bansDone() && state.strict){
+    state.warning = '严格模式下需要先完成全部 Ban。';
+  }else{ state.warning=''; }
+  render();
+}
+function advance(turnKey, usedKey){
+  const t = state[turnKey], o = other(t);
+  const left = tt => Math.max(0, rules()[usedKey==='banUsed'?'bansPerTeam':'picksPerTeam'] - state[usedKey][tt]);
+  if(left(o)>0) state[turnKey]=o;
+  else if(left(t)>0) state[turnKey]=t;
+  else state[turnKey]=o;
+}
+function clickKiller(id){
+  if(!state.pool.length) return;
+  if(state.finished){ toast('本次 Ban/Pick 已结束，如需重来请点「重置流程」'); return; }
+  const st = state.stats[id];
+  if(st){ toast(`${K(id).cn} 已被使用（${st==='ban'?'Ban':'Pick'}）`); return; }
+
+  // 流程走完 → 点选「剩余杀手」
+  if(bansDone() && picksDone()){
+    if(!state.leftoverChosen){
+      snapshot();
+      state.leftover = id; state.leftoverChosen = true;
+      render(); toast(`已选定剩余杀手：${K(id).cn}，请点击「完成选择」入池`);
+    }else{
+      snapshot();
+      state.leftover = id;
+      render(); toast(`剩余杀手改为：${K(id).cn}`);
+    }
+    return;
+  }
+
+  /* ---- 穿插流程：由协调好的步骤序列决定「谁 · Ban 还是 Pick」 ---- */
+  if(!state.freeMode){
+    const cur = currentStep();
+    if(!cur){ toast('流程已走完，请点选剩余杀手'); return; }
+    const stepNo = cur.index + 1;
+    snapshot();
+    const t = cur.team;
+    if(cur.action==='ban'){ state.stats[id]='ban'; state.bans.push({id, team:t}); state.banUsed[t]++; }
+    else { state.stats[id] = 'pick'+t; state.picks.push({id, team:t}); state.pickUsed[t]++; }
+    state.log.push({team:t, action:cur.action, id});
+    state.mode = cur.action;
+    syncTurns();
+    state.warning = '';
+    render();
+    toast(`第 ${stepNo} 步 · ${teamName(t)} ${cur.action==='ban'?'BAN 掉':'PICK 了'} ${K(id).cn}`);
+    return;
+  }
+
+  /* ---- 自由模式：Ban / Pick 两套计数独立切换 ---- */
+  if(state.mode==='ban'){
+    if(banLeft(state.banTurn)<=0){
+      const o = other(state.banTurn);
+      if(banLeft(o)>0) state.banTurn = o; else { toast('本局 Ban 次数已全部用完'); return; }
+    }
+    snapshot();
+    const t = state.banTurn;
+    state.stats[id] = 'ban'; state.bans.push({id, team:t}); state.banUsed[t]++;
+    state.log.push({team:t, action:'ban', id});
+    advance('banTurn','banUsed');
+    state.warning = '';
+    render(); toast(`${teamName(t)} BAN 掉 ${K(id).cn}`);
+  }else{
+    if(pickLeft(state.pickTurn)<=0){
+      const o = other(state.pickTurn);
+      if(pickLeft(o)>0) state.pickTurn = o; else { toast('本局 Pick 次数已全部用完'); return; }
+    }
+    if(!bansDone() && state.strict){ toast('严格模式：请先完成全部 Ban'); return; }
+    snapshot();
+    const t = state.pickTurn;
+    state.stats[id] = 'pick'+t; state.picks.push({id, team:t}); state.pickUsed[t]++;
+    state.log.push({team:t, action:'pick', id});
+    advance('pickTurn','pickUsed');
+    state.warning = bansDone()?'':'仍有 Ban 未完成（当前为自由模式，可继续 Pick）。';
+    render(); toast(`${teamName(t)} PICK 了 ${K(id).cn}`);
+  }
+}
+function finish(){
+  const rem = remainingIds();
+  if(!bansDone() || !picksDone()){ toast('Ban / Pick 尚未完成'); return; }
+  if(rem.length===1 && !state.leftoverChosen){ state.leftover = rem[0]; state.leftoverChosen = true; }
+  if(rem.length===0 && !state.leftoverChosen){ state.leftover = null; state.leftoverChosen = false; }
+  else if(!state.leftoverChosen){ toast('请先在角色池中点击 1 位屠夫作为剩余杀手'); return; }
+  snapshot();
+  state.finished = true; state.mode = 'ban';
+  state.warning = state.leftover ? '' : '当前设置下池内没有剩余屠夫，结果池中不含「剩余杀手」。';
+  render();
+  toast(state.leftover
+    ? `完成：剩余杀手 ${K(state.leftover).cn} 已加入结果池（第 ${resultRows().length} 位）`
+    : '完成：本次没有剩余杀手');
+}
+
+/* ==================== js/ui/export.js ==================== */
+/* =========================================================
+   结果文本导出与复制
+   ========================================================= */
+
+/* =========================================================
+   结果文本
+   ========================================================= */
+function resultText(){
+  const r = rules();
+  const L = [];
+  L.push('【黎明杀机 · 屠夫 Ban/Pick 结果】');
+  L.push(`赛制：${state.format}　角色池：${state.pool.length} 位　每队 Ban ${r.bansPerTeam}　每队 Pick ${r.picksPerTeam}`);
+  L.push(`队伍：${teamName('A')} vs ${teamName('B')}`);
+  L.push('');
+  const ba = state.bans.filter(b=>b.team==='A').map(b=>K(b.id).cn);
+  const bb = state.bans.filter(b=>b.team==='B').map(b=>K(b.id).cn);
+  L.push(`Ban｜${teamName('A')}（${ba.length}）：${ba.join('、')||'—'}`);
+  L.push(`Ban｜${teamName('B')}（${bb.length}）：${bb.join('、')||'—'}`);
+  L.push('');
+  if(state.log.length){
+    L.push(`行动顺序（${state.freeMode?'自由模式':'穿插流程'}）：`);
+    state.log.forEach((a,i)=>{
+      L.push(`${i+1}. ${teamName(a.team)} ${a.action==='ban'?'Ban':'Pick'} ${K(a.id).cn}`);
+    });
+    L.push('');
+  }
+  L.push('选择顺序表：');
+  const rows = resultRows();
+  if(!rows.length) L.push('（尚未完成）');
+  rows.forEach(rw=>{
+    const k = K(rw.id);
+    const who = rw.kind==='leftover' ? '剩余杀手（双方均未选择）' : `${teamName(rw.team)} 选择`;
+    L.push(`${rw.order}. ${k.cn}（${k.en}）— 第${rw.order}局 — ${who}${rw.kind==='leftover'?'':' · Pick'}`);
+  });
+  return L.join('\n');
+}
+function copyResult(){
+  if(!state.picks.length && !state.leftover){ toast('还没有可复制的结果'); return; }
+  const txt = resultText();
+  const done = ()=>toast('结果已复制到剪贴板');
+  if(navigator.clipboard?.writeText){ navigator.clipboard.writeText(txt).then(done).catch(()=>fallback()); }
+  else fallback();
+  function fallback(){
+    const ta = document.createElement('textarea'); ta.value = txt; document.body.appendChild(ta); ta.select();
+    try{ document.execCommand('copy'); done(); }catch(e){ alert(txt); }
+    ta.remove();
+  }
+}
+
+/* ==================== js/ui/preset-io.js ==================== */
+/* =========================================================
+   预设应用、导入导出
+   ========================================================= */
+
+/* =========================================================
+   预设 / 自定义池
+   ========================================================= */
+function currentPreset(){ return allPresets().find(p=>p.id===state.presetId); }
+function presetIds(p){
+  const all = master().map(k=>k.id);
+  if(!p || (!p.ids && !p.exclude)) return all;           // 全部屠夫
+  if(p.ids) return p.ids.filter(id=>all.indexOf(id)>=0);
+  const ex = new Set(p.exclude||[]);
+  return all.filter(id=>!ex.has(id));
+}
+function applyPreset(id){
+  const p = allPresets().find(x=>x.id===id);
+  state.presetId = id;
+  state.baseIds = presetIds(p);
+  render();
+}
+function exportPreset(){
+  const p = currentPreset();
+  const data = { name: state.presetId==='__custom' ? '自定义角色池' : (p?.name||'自定义角色池'),
+    presetId: state.presetId, killers: state.baseIds.map(id=>({id, cn:K(id).cn, en:K(id).en})),
+    exportedAt: new Date().toISOString() };
+  const blob = new Blob([JSON.stringify(data,null,2)], {type:'application/json'});
+  const a = document.createElement('a');
+  a.href = URL.createObjectURL(blob);
+  a.download = `DBD屠夫池_${(data.name||'preset').replace(/[\\/:*?"<>|]/g,'_')}.json`;
+  a.click(); setTimeout(()=>URL.revokeObjectURL(a.href), 3000);
+  toast('已导出当前角色池 JSON');
+}
+function importPreset(){
+  const inp = document.createElement('input'); inp.type='file'; inp.accept='.json,application/json';
+  inp.onchange = ()=>{
+    const f = inp.files[0]; if(!f) return;
+    const fr = new FileReader();
+    fr.onload = ()=>{
+      try{
+        const d = JSON.parse(fr.result);
+        const ids = (d.killers||[]).map(k=> (typeof k==='string'? k : k.id)).filter(id=>master().some(k=>k.id===id));
+        if(!ids.length){ toast('文件中没有可识别的屠夫'); return; }
+        const name = d.name || '导入的角色池';
+        const exist = (store.userPresets||[]).find(x=>x.name===name);
+        if(exist) exist.ids = ids; else store.userPresets.push({id:'u'+Date.now(), name, ids, cat:'我的预设', note:'由 JSON 导入'});
+        saveStore();
+        state.presetId = exist? exist.id : store.userPresets[store.userPresets.length-1].id;
+        state.baseIds = ids.slice();
+        render(); toast(`已导入预设「${name}」（${ids.length} 位屠夫）`);
+      }catch(e){ toast('JSON 解析失败'); }
+    };
+    fr.readAsText(f);
+  };
+  inp.click();
+}
+
+/* ==================== js/app/events.js ==================== */
+/* =========================================================
+   事件绑定
+   ========================================================= */
+
+/* =========================================================
+   事件绑定
+   ========================================================= */
+function bind(){
+  $('#formatChips').addEventListener('click', e=>{
+    const c = e.target.closest('[data-fmt]'); if(!c) return;
+    if(state.pool.length && (usedIds().length||state.picks.length) && !confirm('切换赛制会清空当前流程，确定吗？')) return;
+    state.format = c.dataset.fmt; store.format = state.format; saveStore();
+    state.pool=[]; state.stats={}; state.bans=[]; state.picks=[]; state.log=[]; state.leftover=null; state.leftoverChosen=false;
+    state.banUsed={A:0,B:0}; state.pickUsed={A:0,B:0}; state.finished=false; state.history=[]; state.warning='';
+    state.banTurn=state.first; state.pickTurn=state.first;
+    state.mode = state.freeMode ? 'ban' : (sequence()[0]?.action || 'ban');
+    render();
+  });
+  $('#teamA').addEventListener('input', e=>{ state.teams.A = e.target.value||'A队'; store.teams.A=state.teams.A; saveStore(); renderControls(); renderResult(); });
+  $('#teamB').addEventListener('input', e=>{ state.teams.B = e.target.value||'B队'; store.teams.B=state.teams.B; saveStore(); renderControls(); renderResult(); });
+  $('#firstSide').addEventListener('change', e=>{
+    if(state.pool.length && state.log.length && !confirm('切换先手方会重置当前流程，确定吗？')){ render(); return; }
+    state.first = e.target.value;
+    state.banUsed={A:0,B:0}; state.pickUsed={A:0,B:0};
+    state.stats={}; state.bans=[]; state.picks=[]; state.log=[]; state.leftover=null; state.leftoverChosen=false;
+    state.finished=false; state.history=[]; state.warning='';
+    state.banTurn=state.first; state.pickTurn=state.first;
+    state.mode = sequence()[0]?.action || 'ban';
+    render();
+  });
+  $('#flowMode').addEventListener('change', e=>{
+    if(state.pool.length && state.log.length && !confirm('切换流程模式会重置当前流程，确定吗？')){ render(); return; }
+    state.freeMode = e.target.value === 'free';
+    state.banUsed={A:0,B:0}; state.pickUsed={A:0,B:0};
+    state.stats={}; state.bans=[]; state.picks=[]; state.log=[]; state.leftover=null; state.leftoverChosen=false;
+    state.finished=false; state.history=[]; state.warning='';
+    state.banTurn=state.first; state.pickTurn=state.first;
+    state.mode = state.freeMode ? 'ban' : (sequence()[0]?.action || 'ban');
+    render();
+    toast(state.freeMode ? '已切换为自由模式（Ban / Pick 独立切换）' : '已切换为穿插流程（Ban 之间穿插 Pick）');
+  });
+  $('#freeMode').addEventListener('change', e=>{
+    if(state.pool.length && state.log.length && !confirm('切换自由模式会重置当前流程，确定吗？')){ render(); return; }
+    state.freeMode = e.target.checked;
+    state.banUsed={A:0,B:0}; state.pickUsed={A:0,B:0};
+    state.stats={}; state.bans=[]; state.picks=[]; state.log=[]; state.leftover=null; state.leftoverChosen=false;
+    state.finished=false; state.history=[]; state.warning='';
+    state.banTurn=state.first; state.pickTurn=state.first;
+    state.mode = state.freeMode ? 'ban' : (sequence()[0]?.action || 'ban');
+    render();
+  });
+  $('#strictMode').addEventListener('change', e=>{ state.strict=e.target.checked; store.strict=state.strict; saveStore(); render(); });
+
+  $('#modeBan').addEventListener('click', ()=>setMode('ban'));
+  $('#modePick').addEventListener('click', ()=>setMode('pick'));
+  $('#board').addEventListener('click', e=>{ const c=e.target.closest('[data-kid]'); if(c) clickKiller(c.dataset.kid); });
+  $('#drawBtn').addEventListener('click', drawPool);
+  $('#redrawBtn').addEventListener('click', ()=>{
+    if(usedIds().length && !confirm('重新抽取会清空当前 Ban/Pick 记录，确定吗？')) return;
+    drawPool();
+  });
+  $('#finishBtn').addEventListener('click', finish);
+  $('#undoBtn').addEventListener('click', undo);
+  $('#resetFlowBtn').addEventListener('click', resetFlow);
+  $('#copyBtn').addEventListener('click', copyResult);
+
+  $('#presetSelect').addEventListener('change', e=>applyPreset(e.target.value));
+  $('#killFilter').addEventListener('input', renderKillerPick);
+  $('#killerPick').addEventListener('change', e=>{
+    const cb = e.target.closest('input[data-kid]'); if(!cb) return;
+    const id = cb.dataset.kid, set = new Set(state.baseIds);
+    if(cb.checked) set.add(id); else set.delete(id);
+    state.baseIds = master().map(k=>k.id).filter(x=>set.has(x));
+    if(state.presetId!=='__custom'){
+      const p = currentPreset();
+      if(p){
+        const pids = presetIds(p);
+        if(pids.length!==state.baseIds.length || pids.some(x=>!set.has(x))) state.presetId='__custom';
+      }
+    }
+    renderPresets();
+  });
+  $('#selAll').addEventListener('click', ()=>{ state.baseIds = master().map(k=>k.id); state.presetId='__custom'; render(); });
+  $('#selNone').addEventListener('click', ()=>{ state.baseIds = []; state.presetId='__custom'; render(); });
+  $('#selInv').addEventListener('click', ()=>{ const s=new Set(state.baseIds); state.baseIds = master().map(k=>k.id).filter(x=>!s.has(x)); state.presetId='__custom'; render(); });
+  $('#selPreset').addEventListener('click', ()=>{
+    const p = currentPreset();
+    if(!p || (!p.ids && !p.exclude)){ toast('当前是「全部屠夫」或自定义池，无可恢复的清单'); return; }
+    state.baseIds = presetIds(p); render(); toast(`已按预设「${p.name}」勾选 ${state.baseIds.length} 位屠夫`);
+  });
+  $('#savePreset').addEventListener('click', ()=>{
+    const name = ($('#presetName').value||'').trim();
+    if(!name){ toast('请填写预设名称'); return; }
+    if(!state.baseIds.length){ toast('至少勾选 1 位屠夫'); return; }
+    const exist = (store.userPresets||[]).find(p=>p.name===name);
+    if(exist){ if(!confirm(`已存在同名预设「${name}」，覆盖吗？`)) return; exist.ids = state.baseIds.slice(); state.presetId = exist.id; }
+    else{ const id='u'+Date.now(); store.userPresets.push({id, name, ids:state.baseIds.slice(), cat:'我的预设', note:'我的自定义角色池'}); state.presetId=id; }
+    saveStore(); render(); toast(`已保存预设「${name}」（${state.baseIds.length} 位）`);
+  });
+  $('#overwritePreset').addEventListener('click', ()=>{
+    const p = currentPreset();
+    if(!p || !p.user){ toast('请先在左上角选择「我的预设」'); return; }
+    p.ids = state.baseIds.slice(); saveStore(); render(); toast(`已覆盖「${p.name}」`);
+  });
+  $('#deletePreset').addEventListener('click', ()=>{
+    const p = currentPreset();
+    if(!p || !p.user){ toast('只能删除「我的预设」'); return; }
+    if(!confirm(`删除预设「${p.name}」？`)) return;
+    store.userPresets = store.userPresets.filter(x=>x.id!==p.id); saveStore();
+    state.presetId='all'; applyPreset('all'); toast('已删除');
+  });
+  $('#exportPreset').addEventListener('click', exportPreset);
+  $('#importPreset').addEventListener('click', importPreset);
+  $('#addKiller').addEventListener('click', ()=>{
+    const raw = ($('#newKiller').value||'').trim(); if(!raw){ toast('请输入名称'); return; }
+    const parts = raw.split('/').map(s=>s.trim());
+    const en = parts[0], cn = parts[1] || parts[0];
+    store.extraKillers.push({en, cn}); saveStore();
+    state.baseIds.push('x'+(store.extraKillers.length-1));
+    $('#newKiller').value=''; render(); toast(`已添加屠夫「${cn}」到总表并勾选`);
+  });
+  $('#fullListBtn').addEventListener('click', ()=>{
+    const list = master().map((k,i)=>`${i+1}. ${k.cn}（${k.en}）· ${k.ch||''}`).join('\n');
+    alert(`屠夫总表（${master().length} 位）：\n\n${list}`);
+  });
+  document.addEventListener('keydown', e=>{
+    if(e.target.matches('input,textarea,select')) return;
+    if((e.ctrlKey||e.metaKey) && e.key.toLowerCase()==='z'){ e.preventDefault(); undo(); }
+    if(e.key==='1') setMode('ban');
+    if(e.key==='2') setMode('pick');
+  });
+}
+
+/* ==================== js/app/main.js ==================== */
+/* =========================================================
+   启动引导
+   ========================================================= */
+
+/* =========================================================
+   启动
+   ========================================================= */
+loadStore();
+state = freshState();
+if(restoreSession()) toast('已恢复上次未完成的对局（点「重置流程」或重新抽取可清空）');
+bind();
+render();
+</script>
+
+</body>
+</html>
